@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# This command provides for running a command every time a directory in the filesystem changes
+# (using fswatch). If you don't have fswatch, install it from a package manager, such as
+# homebrew.
+#
+# usage
+#   watch <path-to-watch> <command-to-run>
+#
+# example
+#  watch /tmp/src/wiki "tree -a -C -F -t ."
+
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <path-to-watch> <command-to-run>"
+    exit 1
+fi
+
+WATCH=$1
+COMMAND="clear && cd $WATCH >/dev/null 2>&1 && $2"
+LATENCY="0.1"
+
+NO_DEFER=
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    NO_DEFER="--no-defer"
+fi
+
+bash -c "$COMMAND"
+fswatch -l "$LATENCY" $NO_DEFER -o "$WATCH" | xargs -n1 bash -c "$COMMAND"
